@@ -59,12 +59,14 @@ const upload = multer({
 });
 
 // Middleware
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "https://studiospace-client-sandy.vercel.app",
+  ],
+  credentials: true,
+}));
+
 
 app.use(cookieParser());
 
