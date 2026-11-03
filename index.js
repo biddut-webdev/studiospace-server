@@ -621,6 +621,7 @@ app.delete("/wishlist/:studioId", requireAuth, async (req, res) => {
 // ==================== BOOKING APIs ====================
 
 // Create booking - Only logged-in users
+
 app.post("/bookings", requireAuth, async (req, res) => {
   try {
     const db = getDB();
@@ -644,11 +645,18 @@ app.post("/bookings", requireAuth, async (req, res) => {
       });
     }
 
+    // Validate booking date
+    const isValidDate =
+      typeof bookingDate === "string" &&
+      /^\d{4}-\d{2}-\d{2}$/.test(bookingDate) &&
+      !Number.isNaN(Date.parse(bookingDate)) &&
+      new Date(bookingDate).toISOString().slice(0, 10) === bookingDate;
+
     const hours = Number(duration);
     const timeParts = String(startTime).split(":").map(Number);
 
     if (
-      !bookingDate ||
+      !isValidDate ||
       timeParts.length !== 2 ||
       !timeParts.every(Number.isInteger) ||
       timeParts[0] < 0 ||
@@ -736,6 +744,7 @@ app.post("/bookings", requireAuth, async (req, res) => {
     });
   }
 });
+
 
 // Get user bookings - Only own bookings
 app.get("/bookings", requireAuth, async (req, res) => {
