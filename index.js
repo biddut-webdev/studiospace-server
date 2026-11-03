@@ -134,7 +134,15 @@ app.post("/auth/jwt", async (req, res) => {
 
     const token = createJWT(session.user);
 
-    res.cookie(JWT_COOKIE_NAME, token, getCookieOptions());
+    res.cookie("studiospace_token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      path: "/",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    console.log("JWT cookie set for:", session.user.email);
 
     return res.status(200).json({
       success: true,
