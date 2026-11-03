@@ -21,7 +21,7 @@ const JWT_COOKIE_NAME = "studiospace_token";
 const getCookieOptions = () => ({
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  sameSite: "none",
   path: "/",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 });
@@ -164,6 +164,7 @@ app.post("/auth/logout", (req, res) => {
     message: "Logged out successfully",
   });
 });
+
 
 // Upload image - Only logged-in users
 app.post(

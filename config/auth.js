@@ -26,8 +26,17 @@ export function createAuth() {
       },
     },
 
+    advanced: {
+      defaultCookieAttributes: {
+        sameSite: "none",
+        secure: true,
+        httpOnly: true,
+      },
+    },
+
     baseURL: process.env.BETTER_AUTH_URL,
     secret: process.env.BETTER_AUTH_SECRET,
+
     trustedOrigins: [
       "http://localhost:3000",
       "https://studiospace-client-sandy.vercel.app",
