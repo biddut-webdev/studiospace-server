@@ -10,6 +10,7 @@ export function createAuth() {
 
     emailAndPassword: {
       enabled: true,
+      autoSignIn: false,
     },
 
     socialProviders: {
@@ -28,8 +29,8 @@ export function createAuth() {
 
     advanced: {
       defaultCookieAttributes: {
-        sameSite: "none",
-        secure: true,
+        sameSite: "lax",
+        secure: false,
         httpOnly: true,
       },
     },
