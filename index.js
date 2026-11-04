@@ -9,6 +9,7 @@ import { ObjectId } from "mongodb";
 import multer from "multer";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
+console.log("BETTER_AUTH_URL:", process.env.BETTER_AUTH_URL);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -91,6 +92,38 @@ async function initializeServer() {
       }
 
       await connectToMongoDB();
+
+      const db = getDB();
+
+      const googleAccounts = await db
+        .collection("account")
+        .find(
+          { providerId: "google" },
+          {
+            projection: {
+              _id: 1,
+              accountId: 1,
+              providerId: 1,
+              userId: 1,
+            },
+          }
+        )
+        .toArray();
+
+      console.log("Google Accounts Found:", googleAccounts.length);
+
+      for (const account of googleAccounts) {
+        const user = await db.collection("user").findOne({
+          _id: account.userId,
+        });
+
+        console.log({
+          accountId: account.accountId,
+          userId: account.userId?.toString(),
+          matchingUserFound: Boolean(user),
+        });
+      }
+
 
       auth = createAuth();
       authHandler = toNodeHandler(auth);
@@ -1052,3 +1085,10 @@ app.get("/host-bookings", requireAuth, async (req, res) => {
 
 // Vercel Serverless Export
 export default app;
+
+// Local Development Server
+if (process.env.VERCEL !== "1") {
+  app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+}
