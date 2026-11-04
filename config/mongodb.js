@@ -4,20 +4,26 @@ import "dotenv/config";
 const client = new MongoClient(process.env.MONGODB_URI);
 
 let db;
+let connectionPromise;
 
 export async function connectToMongoDB() {
-  try {
-    await client.connect();
+  if (db) return db;
 
-    db = client.db("studiospace");
-
-    console.log("MongoDB Connected Successfully!");
-
-    return db;
-  } catch (error) {
-    console.error("MongoDB Connection Failed:", error);
-    throw error;
+  if (!connectionPromise) {
+    connectionPromise = client.connect()
+      .then(() => {
+        db = client.db("studiospace");
+        console.log("MongoDB Connected Successfully!");
+        return db;
+      })
+      .catch((error) => {
+        connectionPromise = null;
+        console.error("MongoDB Connection Failed:", error);
+        throw error;
+      });
   }
+
+  return connectionPromise;
 }
 
 export function getDB() {

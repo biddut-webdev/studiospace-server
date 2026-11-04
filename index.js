@@ -14,6 +14,8 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 let auth;
+let authHandler;
+let initializationPromise;
 
 const JWT_COOKIE_NAME = "studiospace_token";
 
@@ -80,6 +82,41 @@ app.use((req, res, next) => {
   jsonParser(req, res, next);
 });
 
+// Initialize MongoDB and Better Auth for Vercel
+async function initializeServer() {
+  if (!initializationPromise) {
+    initializationPromise = (async () => {
+      if (!process.env.JWT_SECRET) {
+        throw new Error("JWT_SECRET is missing");
+      }
+
+      await connectToMongoDB();
+
+      auth = createAuth();
+      authHandler = toNodeHandler(auth);
+    })().catch((error) => {
+      initializationPromise = null;
+      throw error;
+    });
+  }
+
+  return initializationPromise;
+}
+
+app.use(async (req, res, next) => {
+  try {
+    await initializeServer();
+    next();
+  } catch (error) {
+    console.error("Server Initialization Error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server initialization failed",
+    });
+  }
+});
+
 // Verify JWT token from HTTPOnly cookie
 const requireAuth = (req, res, next) => {
   try {
@@ -110,6 +147,11 @@ const requireAuth = (req, res, next) => {
     });
   }
 };
+
+// Better Auth routes
+app.all("/api/auth/*splat", (req, res) => {
+  return authHandler(req, res);
+});
 
 // Create JWT after Better Auth session verification
 app.post("/auth/jwt", async (req, res) => {
@@ -162,8 +204,8 @@ app.post("/auth/jwt", async (req, res) => {
 app.post("/auth/logout", (req, res) => {
   res.clearCookie(JWT_COOKIE_NAME, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
     path: "/",
   });
 
@@ -1029,3 +1071,6 @@ async function startServer() {
 }
 
 startServer();
+
+// Vercel Serverless Export
+export default app;
