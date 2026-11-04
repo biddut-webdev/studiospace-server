@@ -1038,6 +1038,7 @@ app.get("/host-bookings", requireAuth, async (req, res) => {
       message: "Host bookings fetched successfully",
       data: bookings,
     });
+
   } catch (error) {
     console.error("Host Bookings Fetch Error:", error);
 
@@ -1048,29 +1049,6 @@ app.get("/host-bookings", requireAuth, async (req, res) => {
   }
 });
 
-// Start server
-async function startServer() {
-  try {
-    if (!process.env.JWT_SECRET) {
-      throw new Error("JWT_SECRET is missing from server .env");
-    }
-
-    await connectToMongoDB();
-
-    auth = createAuth();
-
-    app.all("/api/auth/*splat", toNodeHandler(auth));
-
-    app.listen(PORT, () => {
-      console.log(`StudioSpace server running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("Server startup failed:", error);
-    process.exit(1);
-  }
-}
-
-startServer();
 
 // Vercel Serverless Export
 export default app;
